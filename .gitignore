@@ -1,0 +1,4 @@
+.stack*
+.DS_Store
+web/assets/.sass-cache
+web/assets/css
