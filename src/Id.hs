@@ -20,7 +20,7 @@ module Id (Id(..), fromId) where
 
 import           Prelude
 
-newtype Id = Id Int deriving (Eq)
+newtype Id = Id Int deriving (Eq, Show)
 
 fromId :: Id -> Int
 fromId (Id id) = id
