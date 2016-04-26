@@ -15,6 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -}
+
+{-# LANGUAGE BangPatterns #-}
 module Combatant (
     State(..),
     Combatant(..),
@@ -66,7 +68,7 @@ data Combatant =
          }
 
 mkCombatant :: Class -> Combatant
-mkCombatant cls =
+mkCombatant !cls =
   let def =
              Combatant
                { id = Id 0
@@ -87,72 +89,72 @@ mkCombatant cls =
       def { cclass = cls, hitPoints = 80.0 }
 
 strength :: Combatant -> Double
-strength cmbt = Class.strength (cclass cmbt)
+strength !cmbt = Class.strength (cclass cmbt)
 
 defense :: Combatant -> Double
-defense cmbt = Class.defense (cclass cmbt) * defenseBonus cmbt
+defense !cmbt = Class.defense (cclass cmbt) * defenseBonus cmbt
 
 defenseBonus :: Combatant -> Double
-defenseBonus cmbt =
+defenseBonus !cmbt =
   case state cmbt of
     Defending -> 0.5
     _         -> 1.0
 
 speed :: Combatant -> Int
-speed cmbt = Class.speed (cclass cmbt)
+speed !cmbt = Class.speed (cclass cmbt)
 
 moveArray :: Combatant -> [Move]
-moveArray cmbt = Class.moveArray (cclass cmbt)
+moveArray !cmbt = Class.moveArray (cclass cmbt)
 
 moveAvailable :: Move -> Combatant -> Bool
-moveAvailable move cmbt = move `List.elem` moveArray cmbt
+moveAvailable !move !cmbt = move `List.elem` moveArray cmbt
 
 alive :: Combatant -> Bool
-alive cmbt = hitPoints cmbt > 0.0
+alive !cmbt = hitPoints cmbt > 0.0
 
 dead :: Combatant -> Bool
-dead cmbt = not (alive cmbt)
+dead !cmbt = not (alive cmbt)
 
 friendsOf :: Player -> Combatant -> Bool
-friendsOf player' cmbt = player cmbt == player'
+friendsOf !player' !cmbt = player cmbt == player'
 
 foesOf :: Player -> Combatant -> Bool
-foesOf player' cmbt = player cmbt /= player'
+foesOf !player' !cmbt = player cmbt /= player'
 
 friends :: Combatant -> Combatant -> Bool
-friends cmbtA cmbtB = player cmbtA == player cmbtB
+friends !cmbtA !cmbtB = player cmbtA == player cmbtB
 
 foes :: Combatant -> Combatant -> Bool
-foes cmbtA cmbtB = player cmbtA /= player cmbtB
+foes !cmbtA !cmbtB = player cmbtA /= player cmbtB
 
 canHaveActiveTurn :: Combatant -> Bool
-canHaveActiveTurn cmbt = alive cmbt && chargeTime cmbt >= 100
+canHaveActiveTurn !cmbt = alive cmbt && chargeTime cmbt >= 100
 
 clockTick :: Combatant -> Combatant
-clockTick cmbt =
+clockTick !cmbt =
   if alive cmbt
     then cmbt { chargeTime = chargeTime cmbt + speed cmbt }
     else cmbt
 
 increaseAP :: Combatant -> Combatant
-increaseAP cmbt =
+increaseAP !cmbt =
   cmbt { actionPoints = min (actionPoints cmbt + 1) 5 }
 
 payAP :: Int -> Combatant -> Maybe Combatant
-payAP amount cmbt =
+payAP !amount !cmbt =
   if actionPoints cmbt >= amount
     then Just $
       cmbt { actionPoints = actionPoints cmbt - amount }
     else Nothing
 
 payTurnCT :: Combatant -> Combatant
-payTurnCT cmbt =
+payTurnCT !cmbt =
   cmbt { chargeTime = chargeTime cmbt - 100 }
 
 toDefaultState :: Combatant -> Combatant
-toDefaultState cmbt =
+toDefaultState !cmbt =
   cmbt { state = Default }
 
 toDefendState :: Combatant -> Combatant
-toDefendState cmbt =
+toDefendState !cmbt =
   cmbt { state = Defending }

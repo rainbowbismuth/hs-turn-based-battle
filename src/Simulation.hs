@@ -15,6 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -}
+
+{-# LANGUAGE BangPatterns #-}
 module Simulation where
 
 import           Combatant          (Combatant)
@@ -40,7 +42,7 @@ data Simulation =
          }
 
 lost :: Player -> Simulation -> Bool
-lost player sim =
+lost !player !sim =
   let
     reducer cmbt x =
       if Combatant.player cmbt == player
@@ -49,19 +51,19 @@ lost player sim =
   in foldr reducer True (combatants sim)
 
 gameOver :: Simulation -> Bool
-gameOver sim =
+gameOver !sim =
   lost AI sim || lost User sim
 
 party :: Player -> Simulation -> IntMap Combatant
-party player sim =
+party !player !sim =
   IntMap.filter (\cmbt -> Combatant.player cmbt == player) (combatants sim)
 
 enemies :: Player -> Simulation -> IntMap Combatant
-enemies player sim =
+enemies !player !sim =
   IntMap.filter (\cmbt -> Combatant.player cmbt /= player) (combatants sim)
 
 findActiveCmbt :: Simulation -> Maybe Combatant
-findActiveCmbt sim =
+findActiveCmbt !sim =
   let
     recur i =
        case IntMap.lookup i (combatants sim) of
@@ -75,7 +77,7 @@ findActiveCmbt sim =
     recur 0
 
 activeCmbt :: Simulation -> Maybe Combatant
-activeCmbt sim =
+activeCmbt !sim =
   case activeCombatant sim of
     Just id ->
       Just (combatantByIdMustExist id sim)
@@ -83,11 +85,11 @@ activeCmbt sim =
       Nothing
 
 activeCmbtMustExist :: Simulation -> Combatant
-activeCmbtMustExist sim =
+activeCmbtMustExist !sim =
   fromMaybe (error "this should not be possible") (activeCmbt sim)
 
 doIHaveActiveTurn :: Id -> Simulation -> Bool
-doIHaveActiveTurn id sim =
+doIHaveActiveTurn !id !sim =
   case activeCmbt sim of
     Just cmbt ->
       Combatant.id cmbt == id
@@ -95,7 +97,7 @@ doIHaveActiveTurn id sim =
       False
 
 dropActiveTurn :: Simulation -> Simulation
-dropActiveTurn sim =
+dropActiveTurn !sim =
   let cmbt =
               activeCmbtMustExist sim
       nextCmbt =
@@ -106,7 +108,7 @@ dropActiveTurn sim =
     }
 
 clockTickUntilTurn :: Simulation -> Simulation
-clockTickUntilTurn initialSim =
+clockTickUntilTurn !initialSim =
   if gameOver initialSim
     then
       initialSim
@@ -133,15 +135,15 @@ clockTickUntilTurn initialSim =
               recur initialSim
 
 whosTurn :: Simulation -> Maybe Player
-whosTurn sim =
+whosTurn !sim =
   fmap Combatant.player (activeCmbt sim)
 
 clockTick :: Simulation -> Simulation
-clockTick sim =
+clockTick !sim =
   sim { combatants = fmap Combatant.clockTick (combatants sim) }
 
 turnOrderArray :: Simulation -> [Combatant]
-turnOrderArray initialSim =
+turnOrderArray !initialSim =
   let
     recur i sim acc =
       if i > 0
@@ -157,15 +159,15 @@ turnOrderArray initialSim =
     reverse $ recur 12 initialSim []
 
 combatantById :: Id -> Simulation -> Maybe Combatant
-combatantById (Id id) sim =
+combatantById !(Id id) !sim =
   IntMap.lookup id (combatants sim)
 
 combatantByIdMustExist :: Id -> Simulation -> Combatant
-combatantByIdMustExist id sim =
+combatantByIdMustExist !id !sim =
   fromMaybe (error "combatant with this ID must exist!") (combatantById id sim)
 
 modifyById :: (Combatant -> Combatant) -> Id -> Simulation -> Simulation
-modifyById f i@(Id id) sim =
+modifyById !f !i@(Id id) !sim =
   case combatantById i sim of
     Just cmbt ->
       sim { combatants = IntMap.insert id (f cmbt) (combatants sim) }
@@ -173,7 +175,7 @@ modifyById f i@(Id id) sim =
       sim
 
 existsAndAlive :: Id -> Simulation -> Bool
-existsAndAlive id sim =
+existsAndAlive !id !sim =
   case combatantById id sim of
     Just cmbt ->
       Combatant.alive cmbt
@@ -181,7 +183,7 @@ existsAndAlive id sim =
       False
 
 targetReaction :: Combatant -> Move -> Combatant -> (Combatant, [String])
-targetReaction user mv target =
+targetReaction !user !mv !target =
   case mv of
     Attack ->
       let
@@ -198,7 +200,7 @@ targetReaction user mv target =
       error "not a single target move"
 
 selfReaction :: Combatant -> Move -> (Combatant, [String])
-selfReaction user mv =
+selfReaction !user !mv =
   case mv of
     Defend ->
       (Combatant.increaseAP (Combatant.toDefendState user),
@@ -207,7 +209,7 @@ selfReaction user mv =
       error "not a self targetting move"
 
 simulate :: Command -> Simulation -> Maybe Simulation
-simulate cmd initialSim =
+simulate !cmd !initialSim =
   let
     tryPay sim mv cmbt =
       case Combatant.payAP (Move.cost mv) cmbt of

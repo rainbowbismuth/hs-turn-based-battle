@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -}
-
+{-# LANGUAGE BangPatterns #-}
 
 module AI.AlphaBeta where
 
@@ -35,7 +35,7 @@ import           Simulation    (Simulation)
 import qualified Simulation
 
 scoreCombatant :: Combatant -> Double
-scoreCombatant cmbt =
+scoreCombatant !cmbt =
   let
     bonus =
       if Combatant.alive cmbt then
@@ -53,12 +53,12 @@ scoreCombatant cmbt =
 
 
 score :: Simulation -> Double
-score sim =
+score !sim =
   foldr (\x y -> scoreCombatant x + y) 0.0 (Simulation.combatants sim)
 
 
 targetsForMove :: Simulation -> Move -> [Command]
-targetsForMove sim mv =
+targetsForMove !sim !mv =
   case Command.typeOfMove mv of
     SingleTargetType ->
       Simulation.combatants sim
@@ -76,7 +76,7 @@ targetsForMove sim mv =
 
 
 availableMoves :: Simulation -> [Command]
-availableMoves sim =
+availableMoves !sim =
   Combatant.moveArray (Simulation.activeCmbtMustExist sim)
     |> (=<<) (targetsForMove sim)
 
@@ -87,12 +87,12 @@ inf =
 
 
 evaluatePosition :: Simulation -> Int -> Double
-evaluatePosition sim depth =
+evaluatePosition !sim !depth =
   alphabeta sim depth (-inf) inf
 
 
 alphabeta :: Simulation -> Int -> Double -> Double -> Double
-alphabeta sim depth a b =
+alphabeta !sim !depth !a !b =
   if depth == 0 || Simulation.gameOver sim then
     score sim
   else
@@ -108,7 +108,7 @@ alphabeta sim depth a b =
 
 
 alphabetaMaximizing :: [Command] -> Simulation -> Int -> Double -> Double -> Double -> Double
-alphabetaMaximizing moves sim depth a b v =
+alphabetaMaximizing !moves !sim !depth !a !b !v =
   case moves of
     m : ms ->
       case Simulation.simulate m sim of
@@ -133,7 +133,7 @@ alphabetaMaximizing moves sim depth a b v =
 
 
 alphabetaMinimizing :: [Command] -> Simulation -> Int -> Double -> Double -> Double -> Double
-alphabetaMinimizing moves sim depth a b v =
+alphabetaMinimizing !moves !sim !depth !a !b !v =
   case moves of
     m : ms ->
       case Simulation.simulate m sim of
@@ -159,7 +159,7 @@ alphabetaMinimizing moves sim depth a b v =
 x |> f = f x
 
 playAI :: Simulation -> Simulation
-playAI sim =
+playAI !sim =
   let
     explore cmd =
       case Simulation.simulate cmd sim of
