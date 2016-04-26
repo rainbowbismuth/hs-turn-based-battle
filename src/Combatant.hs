@@ -40,29 +40,29 @@ module Combatant (
     toDefendState,
     ) where
 
-import           Class (Class(..))
+import           Class      (Class (..))
 import qualified Class
-import qualified Data.List as List
-import           Data.Maybe (Maybe(..))
-import           Data.Ord (min)
-import           Id (Id(..))
-import           Move (Move)
-import           Player (Player(..))
-import           Prelude hiding (id)
+import qualified Data.List  as List
+import           Data.Maybe (Maybe (..))
+import           Data.Ord   (min)
+import           Id         (Id (..))
+import           Move       (Move)
+import           Player     (Player (..))
+import           Prelude    hiding (id)
 
 data State = Default
            | Defending
 
 data Combatant =
        Combatant
-         { id :: Id
-         , player :: Player
-         , name :: String
-         , cclass :: Class
-         , hitPoints :: Double
-         , actionPoints :: Int
-         , chargeTime :: Int
-         , state :: State
+         { id           :: !Id
+         , player       :: !Player
+         , name         :: !String
+         , cclass       :: !Class
+         , hitPoints    :: !Double
+         , actionPoints :: !Int
+         , chargeTime   :: !Int
+         , state        :: !State
          }
 
 mkCombatant :: Class -> Combatant

@@ -49,14 +49,14 @@ main initialSim = mainWidget . divClass "app" $ do
 
 
 data Model = Model
-  { sim :: Simulation
-  , mov :: Maybe Move
+  { sim :: !Simulation
+  , mov :: !(Maybe Move)
   }
 
 
 data Action
-  = SelectMove Move
-  | SelectTarget Id
+  = SelectMove !Move
+  | SelectTarget !Id
   | CancelSelection
   deriving (Show)
 

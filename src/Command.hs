@@ -17,11 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -}
 module Command (Command(..), CommandType(..), typeOfMove, commandType) where
 
-import           Id (Id)
-import           Move (Move(..))
+import           Id   (Id)
+import           Move (Move (..))
 
-data Command = SingleTarget Move Id
-             | SelfTarget Move
+data Command = SingleTarget !Move !Id
+             | SelfTarget !Move
 
 data CommandType = SingleTargetType
                  | SelfTargetType

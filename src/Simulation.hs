@@ -34,9 +34,9 @@ import           Prelude            hiding (id)
 
 data Simulation =
        Simulation
-         { combatants      :: IntMap Combatant
-         , activeCombatant :: Maybe Id
-         , combatLog       :: [String]
+         { combatants      :: !(IntMap Combatant)
+         , activeCombatant :: !(Maybe Id)
+         , combatLog       :: ![String]
          }
 
 lost :: Player -> Simulation -> Bool
